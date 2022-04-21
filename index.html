@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+
+<html lang="pl">
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Szkolna 17 - gra</title>
+  <link rel="stylesheet" href="css/main.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Neonderthaw&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+  
+  <div class="wygrywaszWrapper">
+    <h1 id="wygrywasz">Wygrywasz!!!</h1>
+  </div>
+  
+  <h1>Szkolna 17 - gra w pamięć</h1>
+  <h1 id="moves">Ruchów: 0</h1>
+
+  <div class="cardsContainer" draggable="false">
+    
+    <div id="c0" onclick="reveal(0)"></div>
+    <div id="c1" onclick="reveal(1)"></div>
+    <div id="c2" onclick="reveal(2)"></div>
+    <div id="c3" onclick="reveal(3)"></div>
+
+    <div id="c4" onclick="reveal(4)"></div>
+    <div id="c5" onclick="reveal(5)"></div>
+    <div id="c6" onclick="reveal(6)"></div>
+    <div id="c7" onclick="reveal(7)"></div>
+
+    <div id="c8" onclick="reveal(8)"></div>
+    <div id="c9" onclick="reveal(9)"></div>
+    <div id="c10" onclick="reveal(10)"></div>
+    <div id="c11" onclick="reveal(11)"></div>
+
+    <div id="c12" onclick="reveal(12)"></div>
+    <div id="c13" onclick="reveal(13)"></div>
+    <div id="c14" onclick="reveal(14)"></div>
+    <div id="c15" onclick="reveal(15)"></div>
+
+  </div>
+
+  <button id="button" onclick="location.reload()">RESET</button>
+
+  <script>
+    "use strict";
+
+
+    const fields_base = [1, 1, 2, 2, 3, 3, 4, 4, 5, 5, 6, 6, 7, 7, 8, 8];
+    const fields = [];
+    const alreadyIn = [];
+
+    for(let i = 0; i < 16; i++) {
+      let buf;
+      while(alreadyIn.indexOf(buf = Math.floor(Math.random() * 16)) != -1);
+      fields[i] = fields_base[buf];
+      alreadyIn.push(buf);
+    } 
+
+    const guessed = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0];
+    let points = 0;
+    let revealed = -1;
+    let locked = false;
+    let moves = 0;
+    const docObjects = [];
+
+    for(let i = 0; i < 16; i++) {
+      docObjects[i] = document.getElementById('c' + i);
+      docObjects[i].innerHTML = `<img id="b${i}" class="back" src="resources/szkolna.jpg" draggable="false">
+      <img id="f${i}" class="front" src="resources/p${fields[i]}.jpg" draggable="false">
+      <div id="g${i}"></div>`;
+    }
+
+    function test() {
+        for(let i = 0; i < 16; i++) {
+          docObjects[i].style.backgroundImage = `url('resources/p${fields[i].jpg}')`;
+      }
+    }
+
+    function reveal(id) {
+      if(locked || guessed[id] || revealed == id)return;
+
+      document.getElementById(`b${id}`).style.transform = 'rotateY(180deg)';
+      document.getElementById(`f${id}`).style.transform = 'rotateY(360deg)';
+
+      if(revealed == -1) { revealed = id; }
+      else {
+        if(fields[revealed] != fields[id]) { 
+          locked = true;
+          setTimeout(clear, 750, revealed, id);
+        }
+        else { 
+          guessed[revealed] = 1;
+          guessed[id] = 1;
+          guessAnimation(id, revealed);
+          points++;
+          if(points == 8)youWin();
+        }
+        revealed = -1;
+        moves++;
+        document.getElementById('moves').innerHTML = `Ruchów: ${moves}`;
+      }
+    }
+
+    function clear(rev, id) {
+      document.getElementById(`b${id}`).style.transform = 'rotateY(0deg)';
+      document.getElementById(`f${id}`).style.transform = 'rotateY(180deg)';
+      document.getElementById(`b${rev}`).style.transform = 'rotateY(0deg)';
+      document.getElementById(`f${rev}`).style.transform = 'rotateY(180deg)';
+      locked = false;
+    }
+
+    function guessAnimation(id, revealed) {
+      let gId = document.getElementById(`g${id}`);
+      let gRev = document.getElementById(`g${revealed}`);
+      gId.style.opacity = '0.4';
+      gId.style.width = '100%';
+      gId.style.height = '100%';
+      gRev.style.opacity = '0.4';
+      gRev.style.width = '100%';
+      gRev.style.height = '100%';
+      setTimeout(revertAnimation, 800, gId, gRev);
+    }
+
+    function revertAnimation(gId, gRev) {
+      gId.style.opacity = '0';
+      gId.style.width = '0';
+      gId.style.height = '0';
+      gRev.style.opacity = '0';
+      gRev.style.width = '0';
+      gRev.style.height = '0';
+    }
+  
+    function youWin() {
+      document.getElementById("button").style.display = "block";
+      document.getElementById("wygrywasz").style.transform = "translate(calc(100vw + 750px), 80vh)";
+    }
+    
+  </script>
+
+</body>
+
+</html>
